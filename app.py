@@ -94,6 +94,40 @@ def upload_file():
     except Exception as e:
         return jsonify({"error": f"Failed to parse file: {str(e)}"}), 500
 
+
+@app.route('/api/process-manual', methods=['POST'])
+def process_manual_data():
+    """Handles JSON data from manual input table and returns parsed data and summary statistics."""
+    body = request.get_json()
+    if not body or 'rows' not in body:
+        return jsonify({"error": "Request body must contain 'rows' array"}), 400
+        
+    try:
+        rows = body['rows']
+        if not rows:
+            return jsonify({"error": "No data rows provided"}), 400
+            
+        df = pd.DataFrame(rows)
+        
+        # Clean and validate the dataset using the same core logic
+        cleaned_df, validation_warnings, date_col = clean_and_validate_dataset(df)
+        if cleaned_df is None:
+            return jsonify({"error": "Invalid data structure: " + ", ".join(validation_warnings)}), 400
+            
+        # Structure response
+        response_data = {
+            "columns": cleaned_df.columns.tolist(),
+            "date_column": date_col,
+            "dates": cleaned_df.index.strftime('%Y-%m-%d').tolist(),
+            "data": cleaned_df.to_dict(orient='list'),
+            "statistics": calculate_summary_statistics(cleaned_df),
+            "warnings": validation_warnings
+        }
+        return jsonify(response_data)
+        
+    except Exception as e:
+        return jsonify({"error": f"Failed to process manual data: {str(e)}"}), 500
+
 @app.route('/api/forecast', methods=['POST'])
 def make_forecast():
     """

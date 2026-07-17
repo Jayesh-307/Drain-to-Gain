@@ -689,3 +689,181 @@ function downloadForecastCSV() {
     link.click();
     document.body.removeChild(link);
 }
+/* ==========================================================================
+   Manual Data Grid Editor Logic
+   ========================================================================== */
+function switchUploadTab(tabType) {
+    const uploadTabBtn = document.getElementById("btn-tab-upload");
+    const manualTabBtn = document.getElementById("btn-tab-manual");
+    const dropzone = document.getElementById("dropzone");
+    const manualEntryZone = document.getElementById("manual-entry-zone");
+    
+    if (tabType === 'upload') {
+        uploadTabBtn.classList.add("active");
+        manualTabBtn.classList.remove("active");
+        dropzone.classList.remove("hidden");
+        manualEntryZone.classList.add("hidden");
+    } else {
+        uploadTabBtn.classList.remove("active");
+        manualTabBtn.classList.add("active");
+        dropzone.classList.add("hidden");
+        manualEntryZone.classList.remove("hidden");
+        
+        // Add default row if table is completely empty
+        const tbody = document.getElementById("manual-input-tbody");
+        if (tbody.children.length === 0) {
+            addManualRow("2026-01-01", "120.0", "7.2", "5.0", "8.5", "2.0");
+        }
+    }
+}
+
+function addManualRow(dateStr = "", rainfall = "", ph = "", turbidity = "", doVal = "", nitrates = "") {
+    const tbody = document.getElementById("manual-input-tbody");
+    
+    // Auto-calculate next date (1 month after last row's date)
+    if (!dateStr) {
+        if (tbody.children.length > 0) {
+            const lastRowDateInput = tbody.lastElementChild.querySelector(".table-input-date");
+            const lastDate = new Date(lastRowDateInput.value);
+            if (!isNaN(lastDate)) {
+                // Add 1 month
+                lastDate.setMonth(lastDate.getMonth() + 1);
+                // Format back to YYYY-MM-DD
+                const y = lastDate.getFullYear();
+                const m = String(lastDate.getMonth() + 1).padStart(2, '0');
+                const d = String(lastDate.getDate()).padStart(2, '0');
+                dateStr = `${y}-${m}-${d}`;
+            }
+        }
+        if (!dateStr) {
+            dateStr = "2026-01-01";
+        }
+    }
+    
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+        <td><input type="date" class="table-input-date" value="${dateStr}"></td>
+        <td><input type="number" class="table-input-num" step="0.1" placeholder="Rainfall" value="${rainfall}"></td>
+        <td><input type="number" class="table-input-num" step="0.01" placeholder="pH" value="${ph}"></td>
+        <td><input type="number" class="table-input-num" step="0.1" placeholder="Turbidity" value="${turbidity}"></td>
+        <td><input type="number" class="table-input-num" step="0.01" placeholder="DO" value="${doVal}"></td>
+        <td><input type="number" class="table-input-num" step="0.01" placeholder="Nitrates" value="${nitrates}"></td>
+        <td>
+            <button type="button" class="btn-danger" onclick="deleteManualRow(this)" title="Delete Row">
+                <i data-lucide="trash-2" style="width:16px; height:16px;"></i>
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(tr);
+    lucide.createIcons();
+}
+
+function deleteManualRow(button) {
+    const row = button.closest("tr");
+    row.remove();
+    
+    // Add back an empty row if all deleted
+    const tbody = document.getElementById("manual-input-tbody");
+    if (tbody.children.length === 0) {
+        addManualRow();
+    }
+}
+
+function clearManualTable() {
+    const tbody = document.getElementById("manual-input-tbody");
+    tbody.innerHTML = "";
+    addManualRow();
+}
+
+function loadManualTemplateData() {
+    const tbody = document.getElementById("manual-input-tbody");
+    tbody.innerHTML = "";
+    
+    const templates = [
+        { date: "2026-01-01", rainfall: "45.0", ph: "7.15", turbidity: "3.2", doVal: "9.20", nitrates: "2.10" },
+        { date: "2026-02-01", rainfall: "52.0", ph: "7.20", turbidity: "3.5", doVal: "8.90", nitrates: "2.15" },
+        { date: "2026-03-01", rainfall: "65.0", ph: "7.10", turbidity: "4.1", doVal: "8.50", nitrates: "2.25" },
+        { date: "2026-04-01", rainfall: "120.0", ph: "7.30", turbidity: "8.2", doVal: "7.80", nitrates: "2.50" },
+        { date: "2026-05-01", rainfall: "210.0", ph: "6.95", turbidity: "14.5", doVal: "7.10", nitrates: "2.90" },
+        { date: "2026-06-01", rainfall: "320.0", ph: "6.80", turbidity: "22.0", doVal: "6.50", nitrates: "3.40" },
+        { date: "2026-07-01", rainfall: "290.0", ph: "6.85", turbidity: "19.5", doVal: "6.80", nitrates: "3.20" },
+        { date: "2026-08-01", rainfall: "180.0", ph: "7.12", turbidity: "12.2", doVal: "7.30", nitrates: "2.85" },
+        { date: "2026-09-01", rainfall: "95.0", ph: "7.22", turbidity: "6.8", doVal: "7.95", nitrates: "2.45" },
+        { date: "2026-10-01", rainfall: "50.0", ph: "7.18", turbidity: "4.0", doVal: "8.40", nitrates: "2.20" },
+        { date: "2026-11-01", rainfall: "35.0", ph: "7.25", turbidity: "3.1", doVal: "8.95", nitrates: "2.05" },
+        { date: "2026-12-01", rainfall: "40.0", ph: "7.21", turbidity: "2.9", doVal: "9.15", nitrates: "2.00" }
+    ];
+    
+    templates.forEach(t => {
+        addManualRow(t.date, t.rainfall, t.ph, t.turbidity, t.doVal, t.nitrates);
+    });
+}
+
+function submitManualData() {
+    const tbody = document.getElementById("manual-input-tbody");
+    const rows = [];
+    
+    // Read all rows
+    let validationError = false;
+    for (let tr of tbody.children) {
+        const date = tr.querySelector(".table-input-date").value;
+        const rainfall = parseFloat(tr.querySelector("input[placeholder='Rainfall']").value);
+        const ph = parseFloat(tr.querySelector("input[placeholder='pH']").value);
+        const turbidity = parseFloat(tr.querySelector("input[placeholder='Turbidity']").value);
+        const doVal = parseFloat(tr.querySelector("input[placeholder='DO']").value);
+        const nitrates = parseFloat(tr.querySelector("input[placeholder='Nitrates']").value);
+        
+        if (!date || isNaN(rainfall) || isNaN(ph) || isNaN(turbidity) || isNaN(doVal) || isNaN(nitrates)) {
+            validationError = true;
+            break;
+        }
+        
+        rows.push({
+            "Date": date,
+            "Average Rainfall (mm)": rainfall,
+            "pH": ph,
+            "Turbidity (NTU)": turbidity,
+            "Dissolved Oxygen (DO) (mg/L)": doVal,
+            "Nitrates (mg/L)": nitrates
+        });
+    }
+    
+    if (validationError) {
+        alert("Please fill in all columns with valid values before submitting.");
+        return;
+    }
+    
+    if (rows.length < 5) {
+        alert("You must enter at least 5 rows of data for forecasting calculations.");
+        return;
+    }
+    
+    // Enable loader
+    const spinner = document.getElementById("manual-process-spinner");
+    spinner.classList.remove("hidden");
+    
+    fetch("/api/process-manual", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ "rows": rows })
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(json => { throw new Error(json.error || "Manual data validation failed") });
+            }
+            return response.json();
+        })
+        .then(data => {
+            handleDatasetResponse(data);
+            navigateToSection("section-dashboard");
+        })
+        .catch(err => {
+            alert("Validation Error: " + err.message);
+        })
+        .finally(() => {
+            spinner.classList.add("hidden");
+        });
+}

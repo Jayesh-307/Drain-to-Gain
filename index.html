@@ -143,6 +143,16 @@
                 </div>
 
                 <div class="upload-container">
+                    <!-- Segmented Tabs -->
+                    <div class="upload-tabs">
+                        <button class="tab-btn active" id="btn-tab-upload" onclick="switchUploadTab('upload')">
+                            <i data-lucide="file-spreadsheet"></i> Upload Spreadsheet
+                        </button>
+                        <button class="tab-btn" id="btn-tab-manual" onclick="switchUploadTab('manual')">
+                            <i data-lucide="edit-3"></i> Manual Grid Editor
+                        </button>
+                    </div>
+
                     <!-- Drop Zone -->
                     <div class="upload-dropzone" id="dropzone">
                         <input type="file" id="file-input" accept=".csv, .xls, .xlsx" style="display: none;">
@@ -151,6 +161,51 @@
                         <p>Supports standard CSV, XLS, or XLSX spreadsheet documents.</p>
                         <span class="upload-or">or</span>
                         <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()">Browse Files</button>
+                    </div>
+
+                    <!-- Manual Grid Editor Section -->
+                    <div class="manual-entry-zone hidden" id="manual-entry-zone">
+                        <div class="card card-editor">
+                            <div class="card-header justify-between">
+                                <h3>Data Entry Table</h3>
+                                <div class="table-actions">
+                                    <button class="btn btn-secondary btn-sm" onclick="loadManualTemplateData()">
+                                        <i data-lucide="copy"></i> Load Template Rows
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm" onclick="clearManualTable()">
+                                        <i data-lucide="trash-2"></i> Clear Table
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-scroll">
+                                <table class="data-table edit-table" id="manual-input-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 170px;">Date</th>
+                                            <th>Average Rainfall (mm)</th>
+                                            <th>pH</th>
+                                            <th>Turbidity (NTU)</th>
+                                            <th>Dissolved Oxygen (DO) (mg/L)</th>
+                                            <th>Nitrates (mg/L)</th>
+                                            <th style="width: 70px;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="manual-input-tbody">
+                                        <!-- Editable rows added dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="manual-table-footer justify-between mt-4">
+                                <button class="btn btn-secondary" onclick="addManualRow()">
+                                    <i data-lucide="plus"></i> Add Row
+                                </button>
+                                <button class="btn btn-primary" onclick="submitManualData()">
+                                    <span>Process & Validate Data</span>
+                                    <i data-lucide="arrow-right"></i>
+                                    <div class="spinner hidden" id="manual-process-spinner"></div>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Validation Feedback Panel -->
