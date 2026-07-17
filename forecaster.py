@@ -16,6 +16,13 @@ def clean_and_validate_dataset(df):
     """
     errors = []
     
+    # Drop rows where everything is NaN (very common in Excel files with formatting)
+    df = df.dropna(how='all')
+    
+    if len(df) == 0:
+        errors.append("The uploaded file does not contain any data rows.")
+        return None, errors, None
+    
     # 1. Look for Date/Time column
     date_cols = [c for c in df.columns if 'date' in c.lower() or 'year' in c.lower() or 'month' in c.lower()]
     if not date_cols:
@@ -25,18 +32,27 @@ def clean_and_validate_dataset(df):
     else:
         date_col = date_cols[0]
         
+    # Drop rows where date column is empty/null
+    df = df.dropna(subset=[date_col])
+    
+    if len(df) == 0:
+        errors.append(f"No valid dates found in the date column '{date_col}'.")
+        return None, errors, None
+        
     # Convert date column to datetime
     try:
-        df[date_col] = pd.to_datetime(df[date_col])
+        df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+        # Drop rows where date conversion failed (resulted in NaT)
+        df = df.dropna(subset=[date_col])
         # Sort by date
         df = df.sort_values(by=date_col)
     except Exception as e:
         errors.append(f"Failed to parse dates in column '{date_col}': {str(e)}")
         return None, errors, None
         
-    # Check for empty dataset
+    # Check for empty dataset again
     if len(df) < 5:
-        errors.append("Dataset must contain at least 5 rows for time-series forecasting.")
+        errors.append("Dataset must contain at least 5 rows with valid dates for time-series forecasting.")
         return None, errors, None
         
     # Identifiable target parameters
@@ -80,6 +96,10 @@ def clean_and_validate_dataset(df):
             # Linear interpolation for time-series
             series = series.interpolate(method='linear').ffill().bfill()
         
+        # Fallback for remaining NaNs (if interpolation failed because of all-NaNs)
+        if series.isna().any():
+            series = series.fillna(0.0)
+            
         # Verify that we have numeric data now
         if series.isna().all():
             errors.append(f"Column '{original_col}' contains no valid numerical data.")
@@ -91,17 +111,25 @@ def clean_and_validate_dataset(df):
 
 def calculate_summary_statistics(df):
     """
-    Computes summary stats for each parameter.
+    Computes summary stats for each parameter, ensuring absolute safety against NaNs.
     """
     stats = {}
     for col in df.columns:
         series = df[col]
+        
+        mean_val = series.mean()
+        median_val = series.median()
+        std_val = series.std()
+        min_val = series.min()
+        max_val = series.max()
+        
+        # Safely convert to float or fallback to 0.0 if NaN/null
         stats[col] = {
-            "mean": float(np.round(series.mean(), 2)),
-            "median": float(np.round(series.median(), 2)),
-            "std": float(np.round(series.std(), 2)),
-            "min": float(np.round(series.min(), 2)),
-            "max": float(np.round(series.max(), 2)),
+            "mean": float(np.round(mean_val, 2)) if not pd.isna(mean_val) else 0.0,
+            "median": float(np.round(median_val, 2)) if not pd.isna(median_val) else 0.0,
+            "std": float(np.round(std_val, 2)) if not pd.isna(std_val) else 0.0,
+            "min": float(np.round(min_val, 2)) if not pd.isna(min_val) else 0.0,
+            "max": float(np.round(max_val, 2)) if not pd.isna(max_val) else 0.0,
             "count": int(series.count())
         }
     return stats
