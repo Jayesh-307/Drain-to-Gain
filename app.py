@@ -6,7 +6,7 @@ import os
 import io
 
 # Import forecasting functions
-from forecaster import clean_and_validate_dataset, calculate_summary_statistics, perform_forecast, generate_plot_base64
+from forecaster import clean_and_validate_dataset, calculate_summary_statistics, perform_forecast, generate_plot_base64, generate_correlation_plot_base64
 from sample_generator import generate_sample_data
 
 # Determine static folder dynamically (works both locally and on Render)
@@ -127,6 +127,37 @@ def process_manual_data():
         
     except Exception as e:
         return jsonify({"error": f"Failed to process manual data: {str(e)}"}), 500
+
+
+@app.route('/api/correlation-plot', methods=['POST'])
+def make_correlation_plot():
+    """Generates a dual-axis correlation line chart and returns it as base64."""
+    body = request.get_json()
+    if not body:
+        return jsonify({"error": "Request body must be JSON"}), 400
+        
+    dates = body.get('dates')
+    param1_name = body.get('param1_name')
+    param1_values = body.get('param1_values')
+    param2_name = body.get('param2_name')
+    param2_values = body.get('param2_values')
+    dark_mode = body.get('dark_mode', False)
+    
+    if not dates or not param1_name or not param1_values or not param2_name or not param2_values:
+        return jsonify({"error": "Missing required parameters for correlation analysis."}), 400
+        
+    try:
+        plot_image = generate_correlation_plot_base64(
+            dates=dates,
+            param1_name=param1_name,
+            param1_values=param1_values,
+            param2_name=param2_name,
+            param2_values=param2_values,
+            dark_mode=dark_mode
+        )
+        return jsonify({"plot_image": plot_image})
+    except Exception as e:
+        return jsonify({"error": f"Failed to generate correlation plot: {str(e)}"}), 500
 
 @app.route('/api/forecast', methods=['POST'])
 def make_forecast():

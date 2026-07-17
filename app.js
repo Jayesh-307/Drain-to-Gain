@@ -230,15 +230,22 @@ function handleDatasetResponse(data) {
         document.getElementById("dashboard-param-select").value = data.columns[0];
         document.getElementById("forecast-param-select").value = data.columns[0];
         updateDashboard(data.columns[0]);
+        
+        // Render initial Python correlation chart
+        updateCorrelationPlot();
     }
 }
 
 function populateDropdowns(columns) {
     const dashSelect = document.getElementById("dashboard-param-select");
     const foreSelect = document.getElementById("forecast-param-select");
+    const corrSelect1 = document.getElementById("corr-param-1");
+    const corrSelect2 = document.getElementById("corr-param-2");
     
     dashSelect.innerHTML = "";
     foreSelect.innerHTML = "";
+    corrSelect1.innerHTML = "";
+    corrSelect2.innerHTML = "";
     
     columns.forEach(col => {
         const opt1 = document.createElement("option");
@@ -250,7 +257,31 @@ function populateDropdowns(columns) {
         opt2.value = col;
         opt2.innerText = col;
         foreSelect.appendChild(opt2);
+        
+        const opt3 = document.createElement("option");
+        opt3.value = col;
+        opt3.innerText = col;
+        corrSelect1.appendChild(opt3);
+        
+        const opt4 = document.createElement("option");
+        opt4.value = col;
+        opt4.innerText = col;
+        corrSelect2.appendChild(opt4);
     });
+    
+    // Set default correlation selections (e.g. Rainfall vs Turbidity if available)
+    if (columns.length >= 2) {
+        corrSelect1.value = columns[0];
+        corrSelect2.value = columns[1];
+        
+        // If we have Rainfall and Turbidity, prefer those as default correlation
+        const rainfallCol = columns.find(c => c.toLowerCase().includes("rainfall"));
+        const turbidityCol = columns.find(c => c.toLowerCase().includes("turbidity"));
+        if (rainfallCol && turbidityCol) {
+            corrSelect1.value = rainfallCol;
+            corrSelect2.value = turbidityCol;
+        }
+    }
     
     // Add change listeners
     dashSelect.onchange = () => updateDashboard(dashSelect.value);
@@ -867,3 +898,91 @@ function submitManualData() {
             spinner.classList.add("hidden");
         });
 }
+
+/* ==========================================================================
+   Python-based Parameter Correlation Analysis
+   ========================================================================== */
+function updateCorrelationPlot() {
+    if (!currentDataset) return;
+    
+    const param1 = document.getElementById("corr-param-1").value;
+    const param2 = document.getElementById("corr-param-2").value;
+    
+    if (param1 === param2) {
+        alert("Please select two different parameters to analyze correlation.");
+        return;
+    }
+    
+    const plotImg = document.getElementById("correlationPlotImg");
+    const spinner = document.getElementById("correlation-spinner");
+    const placeholder = document.getElementById("correlation-placeholder");
+    
+    // UI Loading state
+    plotImg.style.display = "none";
+    placeholder.style.display = "none";
+    spinner.classList.remove("hidden");
+    
+    const payload = {
+        dates: currentDataset.dates,
+        param1_name: param1,
+        param1_values: currentDataset.data[param1],
+        param2_name: param2,
+        param2_values: currentDataset.data[param2],
+        dark_mode: isDarkMode()
+    };
+    
+    fetch("/api/correlation-plot", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(json => { throw new Error(json.error || "Correlation analysis failed") });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.plot_image) {
+                plotImg.src = data.plot_image;
+                plotImg.style.display = "block";
+            } else {
+                placeholder.style.display = "block";
+            }
+        })
+        .catch(err => {
+            alert("Correlation Error: " + err.message);
+            placeholder.style.display = "block";
+        })
+        .finally(() => {
+            spinner.classList.add("hidden");
+        });
+}
+
+function downloadCorrelationPNG() {
+    const plotImg = document.getElementById("correlationPlotImg");
+    if (!plotImg || !plotImg.src) {
+        alert("Please generate a correlation plot first.");
+        return;
+    }
+    
+    const param1 = document.getElementById("corr-param-1").value;
+    const param2 = document.getElementById("corr-param-2").value;
+    
+    const link = document.createElement('a');
+    link.download = `correlation_${param1}_vs_${param2}.png`;
+    link.href = plotImg.src;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+/* ==========================================================================
+   A4 PDF Report Print Generator
+   ========================================================================== */
+function exportPDFReport() {
+    window.print();
+}
+

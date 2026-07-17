@@ -29,7 +29,10 @@
                 <span class="subtitle">Interdisciplinary Project (IDP) • Mathematics</span>
             </div>
         </div>
-        <div class="header-actions">
+        <div class="header-actions" style="display: flex; gap: 0.75rem;">
+            <button class="btn btn-secondary btn-sm" onclick="exportPDFReport()">
+                <i data-lucide="printer"></i> Export PDF Report
+            </button>
             <button id="theme-toggle" class="btn-icon" title="Toggle Theme" aria-label="Toggle Theme">
                 <i data-lucide="sun" class="sun-icon"></i>
                 <i data-lucide="moon" class="moon-icon"></i>
@@ -322,6 +325,34 @@
                     </div>
                     <div class="chart-canvas-container">
                         <canvas id="historicalChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Parameter Correlation Analysis Card (Python Matplotlib Based) -->
+                <div class="card mt-4" id="correlation-card-container">
+                    <div class="card-header justify-between">
+                        <h3>Python Parameter Correlation Analysis</h3>
+                        <div class="correlation-selectors flex-align" style="gap: 1.25rem;">
+                            <div class="select-wrapper" style="display: flex; align-items: center; gap: 0.5rem;">
+                                <label for="corr-param-1" style="font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); white-space: nowrap;">Primary Y-Axis:</label>
+                                <select id="corr-param-1" class="select-input" onchange="updateCorrelationPlot()"></select>
+                            </div>
+                            <div class="select-wrapper" style="display: flex; align-items: center; gap: 0.5rem;">
+                                <label for="corr-param-2" style="font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); white-space: nowrap;">Secondary Y-Axis:</label>
+                                <select id="corr-param-2" class="select-input" onchange="updateCorrelationPlot()"></select>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="downloadCorrelationPNG()">
+                                <i data-lucide="download"></i> Download PNG
+                            </button>
+                        </div>
+                    </div>
+                    <div class="correlation-plot-container text-center" style="display: flex; justify-content: center; align-items: center; min-height: 380px; background-color: var(--bg-color); border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden; position: relative; padding: 1rem;">
+                        <img id="correlationPlotImg" src="" alt="Correlation Chart" style="max-width: 100%; height: auto; display: none;">
+                        <div id="correlation-spinner" class="spinner hidden" style="width: 30px; height: 30px; border-width: 2.5px; border-top-color: var(--primary);"></div>
+                        <div id="correlation-placeholder" class="placeholder-text" style="color: var(--text-secondary); font-family: 'Outfit'; font-size: 0.95rem; text-align: center;">
+                            <i data-lucide="trending-up" style="width: 48px; height: 48px; display: block; margin: 0 auto 1rem auto; stroke-width: 1.5; color: var(--primary);"></i>
+                            Select parameters above to generate Python-based correlation plot
+                        </div>
                     </div>
                 </div>
             </section>

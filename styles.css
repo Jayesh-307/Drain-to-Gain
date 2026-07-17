@@ -1002,3 +1002,77 @@ strong {
 .card-editor {
     border-color: var(--primary-light);
 }
+
+/* Print Media Styles (Export PDF Report) */
+@media print {
+    /* Hide non-printable elements */
+    .app-header, 
+    .app-sidebar, 
+    .btn, 
+    .btn-secondary, 
+    .btn-sm, 
+    .chart-actions, 
+    .correlation-selectors, 
+    .dashboard-controls-bar, 
+    .upload-tabs,
+    .upload-dropzone,
+    .manual-entry-zone, 
+    .validation-panel,
+    .forecast-config-card,
+    #theme-toggle,
+    .sidebar-footer {
+        display: none !important;
+    }
+
+    /* Format container and body */
+    html, body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+    
+    .app-container {
+        padding-top: 0 !important;
+        height: auto !important;
+        display: block !important;
+    }
+    
+    .app-main-content {
+        padding: 0 !important;
+        overflow-y: visible !important;
+    }
+    
+    /* Make cards fit on the print page cleanly */
+    .card, .info-card, .hero-card {
+        background-color: #ffffff !important;
+        border: 1px solid #cccccc !important;
+        box-shadow: none !important;
+        color: #000000 !important;
+        margin-bottom: 2rem !important;
+        page-break-inside: avoid;
+    }
+    
+    .math-block {
+        background-color: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+    
+    .data-table th {
+        background-color: #f1f5f9 !important;
+        color: #000000 !important;
+    }
+    
+    .table-scroll {
+        max-height: none !important;
+        overflow-x: visible !important;
+    }
+    
+    /* Keep images and plots scaled */
+    canvas, img {
+        max-width: 100% !important;
+        height: auto !important;
+        page-break-inside: avoid;
+    }
+}
+

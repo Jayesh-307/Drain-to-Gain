@@ -325,3 +325,73 @@ def generate_plot_base64(history_dates, history_values, forecast_dates, forecast
     # Encode base64
     base64_data = base64.b64encode(buf.read()).decode('utf-8')
     return f"data:image/png;base64,{base64_data}"
+
+def generate_correlation_plot_base64(dates, param1_name, param1_values, param2_name, param2_values, dark_mode=False):
+    """
+    Generates a dual-axis correlation line chart using matplotlib in Python,
+    saving it to a base64 encoded PNG.
+    """
+    # Color setup
+    if dark_mode:
+        plt.style.use('dark_background')
+        bg_color = '#1e1e2e'
+        text_color = '#cdd6f4'
+        p1_color = '#89b4fa' # Blue
+        p2_color = '#f5c2e7' # Pink
+        grid_color = '#313244'
+    else:
+        plt.style.use('default')
+        bg_color = '#ffffff'
+        text_color = '#1e1e2e'
+        p1_color = '#2563eb' # Indigo
+        p2_color = '#db2777' # Dark pink
+        grid_color = '#e2e8f0'
+        
+    fig, ax1 = plt.subplots(figsize=(10, 5.5), facecolor=bg_color)
+    ax1.set_facecolor(bg_color)
+    
+    parsed_dates = pd.to_datetime(dates)
+    
+    # Primary axis (left)
+    color = p1_color
+    ax1.set_xlabel('Timeline', color=text_color, labelpad=10)
+    ax1.set_ylabel(param1_name, color=color, fontweight='semibold')
+    line1 = ax1.plot(parsed_dates, param1_values, color=color, linewidth=2, marker='o', markersize=4, label=param1_name)
+    ax1.tick_params(axis='y', labelcolor=color)
+    ax1.tick_params(colors=text_color, labelsize=9)
+    ax1.grid(True, linestyle=':', alpha=0.6, color=grid_color)
+    
+    # Secondary axis (right)
+    ax2 = ax1.twinx()
+    color = p2_color
+    ax2.set_ylabel(param2_name, color=color, fontweight='semibold')
+    line2 = ax2.plot(parsed_dates, param2_values, color=color, linewidth=2, linestyle='--', marker='s', markersize=4, label=param2_name)
+    ax2.tick_params(axis='y', labelcolor=color)
+    ax2.tick_params(axis='both', which='major', labelsize=9)
+    if dark_mode:
+        ax2.spines['right'].set_color(grid_color)
+        ax2.spines['left'].set_color(grid_color)
+        ax2.spines['top'].set_color(grid_color)
+        ax2.spines['bottom'].set_color(grid_color)
+        
+    # Title
+    ax1.set_title(f'Correlation Analysis: {param1_name} vs {param2_name}', fontsize=14, pad=15, color=text_color, fontweight='bold')
+    
+    # Combine legends
+    lines = line1 + line2
+    labels = [l.get_label() for l in lines]
+    ax1.legend(lines, labels, loc='upper left', facecolor=bg_color, edgecolor=grid_color, labelcolor=text_color)
+    
+    # Rotate ticks
+    plt.setp(ax1.get_xticklabels(), rotation=30)
+    plt.tight_layout()
+    
+    # Save to buffer
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', dpi=150, facecolor=fig.get_facecolor(), edgecolor='none')
+    plt.close(fig)
+    buf.seek(0)
+    
+    base64_data = base64.b64encode(buf.read()).decode('utf-8')
+    return f"data:image/png;base64,{base64_data}"
+

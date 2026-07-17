@@ -102,5 +102,52 @@ class TestForecastingAPI(unittest.TestCase):
         # Verify model details
         self.assertEqual(data["model_summary"]["order"], [1, 0, 1])
 
+    def test_process_manual_endpoint(self):
+        """Test process manual JSON data POST endpoint."""
+        rows = [
+            {"Date": "2026-01-01", "Average Rainfall (mm)": 45.0, "pH": 7.15, "Turbidity (NTU)": 3.2, "Dissolved Oxygen (DO) (mg/L)": 9.20, "Nitrates (mg/L)": 2.10},
+            {"Date": "2026-02-01", "Average Rainfall (mm)": 52.0, "pH": 7.20, "Turbidity (NTU)": 3.5, "Dissolved Oxygen (DO) (mg/L)": 8.90, "Nitrates (mg/L)": 2.15},
+            {"Date": "2026-03-01", "Average Rainfall (mm)": 65.0, "pH": 7.10, "Turbidity (NTU)": 4.1, "Dissolved Oxygen (DO) (mg/L)": 8.50, "Nitrates (mg/L)": 2.25},
+            {"Date": "2026-04-01", "Average Rainfall (mm)": 120.0, "pH": 7.30, "Turbidity (NTU)": 8.2, "Dissolved Oxygen (DO) (mg/L)": 7.80, "Nitrates (mg/L)": 2.50},
+            {"Date": "2026-05-01", "Average Rainfall (mm)": 210.0, "pH": 6.95, "Turbidity (NTU)": 14.5, "Dissolved Oxygen (DO) (mg/L)": 7.10, "Nitrates (mg/L)": 2.90}
+        ]
+        response = self.client.post(
+            '/api/process-manual',
+            data=json.dumps({"rows": rows}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        data = json.loads(response.data)
+        self.assertIn("columns", data)
+        self.assertIn("data", data)
+        self.assertIn("statistics", data)
+        self.assertIn("date_column", data)
+        self.assertEqual(len(data["dates"]), 5)
+
+    def test_correlation_plot_endpoint(self):
+        """Test the backend correlation plot POST endpoint."""
+        dates = [f"2023-{m:02d}-01" for m in range(1, 13)]
+        param1_values = [50, 60, 45, 120, 200, 280, 260, 180, 100, 40, 20, 30]
+        param2_values = [7.2, 7.1, 7.3, 6.9, 6.8, 6.7, 6.8, 7.0, 7.2, 7.3, 7.2, 7.1]
+        
+        payload = {
+            "dates": dates,
+            "param1_name": "Average Rainfall (mm)",
+            "param1_values": param1_values,
+            "param2_name": "pH",
+            "param2_values": param2_values,
+            "dark_mode": False
+        }
+        response = self.client.post(
+            '/api/correlation-plot',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        data = json.loads(response.data)
+        self.assertIn("plot_image", data)
+
 if __name__ == '__main__':
     unittest.main()
