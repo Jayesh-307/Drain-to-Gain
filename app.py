@@ -9,7 +9,15 @@ import io
 from forecaster import clean_and_validate_dataset, calculate_summary_statistics, perform_forecast, generate_plot_base64
 from sample_generator import generate_sample_data
 
-app = Flask(__name__, static_folder='../frontend', static_url_path='')
+# Determine static folder dynamically (works both locally and on Render)
+base_dir = os.path.dirname(os.path.abspath(__file__))
+local_frontend = os.path.join(base_dir, '../frontend')
+if os.path.exists(local_frontend):
+    static_folder = local_frontend
+else:
+    static_folder = base_dir
+
+app = Flask(__name__, static_folder=static_folder, static_url_path='')
 CORS(app)
 
 # Helper to find or generate sample data
