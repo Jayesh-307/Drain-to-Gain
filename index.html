@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drain to Gain - Environmental ARIMA Forecasting</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Icons (Lucide Icons via CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+        <div class="header-logo">
+            <i data-lucide="droplet" class="logo-icon"></i>
+            <div>
+                <h1>Drain to Gain</h1>
+                <span class="subtitle">Interdisciplinary Project (IDP) • Mathematics</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button id="theme-toggle" class="btn-icon" title="Toggle Theme" aria-label="Toggle Theme">
+                <i data-lucide="sun" class="sun-icon"></i>
+                <i data-lucide="moon" class="moon-icon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <nav class="sidebar-nav">
+                <a href="#home" class="nav-item active" data-target="section-home">
+                    <i data-lucide="home"></i> Project Overview
+                </a>
+                <a href="#upload" class="nav-item" data-target="section-upload">
+                    <i data-lucide="upload-cloud"></i> Dataset Upload
+                </a>
+                <a href="#dashboard" class="nav-item" data-target="section-dashboard">
+                    <i data-lucide="bar-chart-2"></i> Data Visualizer
+                </a>
+                <a href="#forecasting" class="nav-item" data-target="section-forecasting">
+                    <i data-lucide="trending-up"></i> ARIMA Forecasting
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="academic-badge">
+                    <i data-lucide="graduation-cap"></i>
+                    <span>IDP Evaluation 2026</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="app-main-content">
+            
+            <!-- SECTION 1: HOME/OVERVIEW -->
+            <section id="section-home" class="content-section active">
+                <div class="hero-card">
+                    <div class="hero-badge">Mathematics Domain</div>
+                    <h2>Environmental Time-Series Analysis Platform</h2>
+                    <p>
+                        <strong>"Drain to Gain"</strong> is an engineering research platform designed to automate the forecasting of environmental and rainwater parameters. By moving beyond traditional Excel capabilities, this system leverages programmatic analysis to accurately predict key water quality indicator trends, promoting sustainable resource planning and water reuse.
+                    </p>
+                    <div class="hero-actions">
+                        <button class="btn btn-primary" onclick="navigateToSection('section-upload')">
+                            Get Started <i data-lucide="arrow-right"></i>
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadSampleDataset()">
+                            Load Sample Dataset <i data-lucide="database"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section-grid">
+                    <!-- Project Scope -->
+                    <div class="info-card">
+                        <div class="card-header-icon">
+                            <i data-lucide="activity"></i>
+                        </div>
+                        <h3>Monitored Parameters</h3>
+                        <p>Our forecasting model tracks and analyzes five key chemical and physical metrics vital for rainwater recycling suitability:</p>
+                        <ul class="parameter-list">
+                            <li><strong>Average Rainfall (mm)</strong> - Quantity and seasonal patterns.</li>
+                            <li><strong>pH Level</strong> - Standard acidity/alkalinity balance.</li>
+                            <li><strong>Turbidity (NTU)</strong> - Water clarity index.</li>
+                            <li><strong>Dissolved Oxygen (mg/L)</strong> - Biological viability metrics.</li>
+                            <li><strong>Nitrates (mg/L)</strong> - Organic runoff pollutant indicator.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Mathematical Context (ARIMA) -->
+                    <div class="info-card arima-theory">
+                        <div class="card-header-icon">
+                            <i data-lucide="binary"></i>
+                        </div>
+                        <h3>The ARIMA Mathematical Model</h3>
+                        <p>
+                            ARIMA (AutoRegressive Integrated Moving Average) is a linear time-series forecasting model characterized by three order parameters: <strong>(p, d, q)</strong>.
+                        </p>
+                        <div class="math-block">
+                            <span class="math-label">General Formula:</span>
+                            <div class="math-eq">
+                                Φ<sub>p</sub>(L)(1 - L)<sup>d</sup> Y<sub>t</sub> = Θ<sub>q</sub>(L) ε<sub>t</sub>
+                            </div>
+                        </div>
+                        <div class="arima-terms">
+                            <div class="term-item">
+                                <span class="term-badge p-badge">AR (p)</span>
+                                <div><strong>AutoRegressive:</strong> Relies on the relationship between an observation and a number of lagged observations.</div>
+                            </div>
+                            <div class="term-item">
+                                <span class="term-badge d-badge">I (d)</span>
+                                <div><strong>Integrated:</strong> The level of differencing applied to make the time-series stationary (removing trend/seasonality).</div>
+                            </div>
+                            <div class="term-item">
+                                <span class="term-badge q-badge">MA (q)</span>
+                                <div><strong>Moving Average:</strong> Leverages the dependency between an observation and residual errors from past lagged forecasts.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: DATASET UPLOAD -->
+            <section id="section-upload" class="content-section">
+                <div class="section-title">
+                    <h2>Dataset Upload Center</h2>
+                    <p>Provide your own environmental time-series data or use our template configuration.</p>
+                </div>
+
+                <div class="upload-container">
+                    <!-- Drop Zone -->
+                    <div class="upload-dropzone" id="dropzone">
+                        <input type="file" id="file-input" accept=".csv, .xls, .xlsx" style="display: none;">
+                        <i data-lucide="upload-cloud" class="upload-icon"></i>
+                        <h3>Drag & drop your file here</h3>
+                        <p>Supports standard CSV, XLS, or XLSX spreadsheet documents.</p>
+                        <span class="upload-or">or</span>
+                        <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()">Browse Files</button>
+                    </div>
+
+                    <!-- Validation Feedback Panel -->
+                    <div class="validation-panel card hidden" id="validation-panel">
+                        <div class="validation-header">
+                            <h3 class="flex-align"><i data-lucide="check-circle-2" class="status-icon success"></i> Dataset Analysis Results</h3>
+                            <span class="badge" id="data-rows-count">0 Rows Loaded</span>
+                        </div>
+                        <div class="validation-content">
+                            <div class="validation-item">
+                                <span class="label">Date Column Identified:</span>
+                                <strong id="date-col-name">-</strong>
+                            </div>
+                            <div class="validation-item">
+                                <span class="label">Variables Processed:</span>
+                                <div class="tag-container" id="parameters-tags"></div>
+                            </div>
+                            <div id="validation-warnings-container" class="validation-warnings hidden">
+                                <h4><i data-lucide="alert-triangle"></i> Data Integrity Log</h4>
+                                <ul id="validation-warnings-list"></ul>
+                            </div>
+                        </div>
+                        <div class="validation-actions">
+                            <button class="btn btn-primary" onclick="navigateToSection('section-dashboard')">
+                                Open Dashboard <i data-lucide="bar-chart-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Table View -->
+                <div class="card mt-4 hidden" id="data-table-container">
+                    <div class="card-header justify-between">
+                        <h3>Raw Dataset (First 10 records)</h3>
+                        <span class="table-info-text">Showing chronological historical observations</span>
+                    </div>
+                    <div class="table-scroll">
+                        <table id="raw-data-table" class="data-table">
+                            <thead>
+                                <!-- Dynamic headers -->
+                            </thead>
+                            <tbody>
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: DATA VISUALIZATION DASHBOARD -->
+            <section id="section-dashboard" class="content-section">
+                <div class="section-title">
+                    <h2>Environmental Metrics Dashboard</h2>
+                    <p>Observe historical metrics, evaluate summary statistics, and track parameter correlation.</p>
+                </div>
+
+                <div class="dashboard-controls-bar">
+                    <div class="control-group">
+                        <label for="dashboard-param-select">Select Metric to Plot:</label>
+                        <select id="dashboard-param-select" class="select-input">
+                            <!-- Dynamic parameter options -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Stats Summary Cards Grid -->
+                <div class="stats-grid">
+                    <div class="stats-card">
+                        <div class="stats-icon"><i data-lucide="hash"></i></div>
+                        <div class="stats-body">
+                            <span class="stats-label">Mean</span>
+                            <h3 id="stat-mean">-</h3>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon"><i data-lucide="sliders"></i></div>
+                        <div class="stats-body">
+                            <span class="stats-label">Median</span>
+                            <h3 id="stat-median">-</h3>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon"><i data-lucide="activity"></i></div>
+                        <div class="stats-body">
+                            <span class="stats-label">Std. Deviation</span>
+                            <h3 id="stat-std">-</h3>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon"><i data-lucide="arrow-down-left"></i></div>
+                        <div class="stats-body">
+                            <span class="stats-label">Minimum</span>
+                            <h3 id="stat-min">-</h3>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon"><i data-lucide="arrow-up-right"></i></div>
+                        <div class="stats-body">
+                            <span class="stats-label">Maximum</span>
+                            <h3 id="stat-max">-</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Large Chart View -->
+                <div class="card mt-4">
+                    <div class="card-header justify-between">
+                        <h3 id="chart-title">Water Parameter Trends</h3>
+                        <div class="chart-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="downloadChartPNG('historical')">
+                                <i data-lucide="download"></i> Download PNG
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chart-canvas-container">
+                        <canvas id="historicalChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4: ARIMA FORECASTING -->
+            <section id="section-forecasting" class="content-section">
+                <div class="section-title">
+                    <h2>ARIMA Forecasting Module</h2>
+                    <p>Apply statsmodels mathematical models to predict environmental patterns and future metrics.</p>
+                </div>
+
+                <!-- Split layout: configuration and live visualizer -->
+                <div class="forecast-layout">
+                    <!-- Forecast Configuration Panel -->
+                    <div class="card forecast-config-card">
+                        <h3>Model Configuration</h3>
+                        <form id="forecast-form" class="mt-4">
+                            <!-- Parameter -->
+                            <div class="form-group">
+                                <label for="forecast-param-select">Target Parameter:</label>
+                                <select id="forecast-param-select" class="select-input" required>
+                                    <!-- Dynamic parameters -->
+                                </select>
+                            </div>
+
+                            <!-- Horizon -->
+                            <div class="form-group">
+                                <label for="forecast-horizon">Forecast Horizon:</label>
+                                <select id="forecast-horizon" class="select-input" required>
+                                    <option value="6">6 Periods (6 Months / Steps)</option>
+                                    <option value="12" selected>1 Year (12 Periods)</option>
+                                    <option value="24">2 Years (24 Periods)</option>
+                                    <option value="36">3 Years (36 Periods)</option>
+                                    <option value="60">5 Years (60 Periods)</option>
+                                </select>
+                            </div>
+
+                            <!-- Mode (Auto vs Manual) -->
+                            <div class="form-group">
+                                <label>ARIMA Model Mode:</label>
+                                <div class="radio-toggle-group">
+                                    <label class="radio-toggle">
+                                        <input type="radio" name="arima-mode" value="auto" checked>
+                                        <span>Auto-ARIMA (AIC optimized)</span>
+                                    </label>
+                                    <label class="radio-toggle">
+                                        <input type="radio" name="arima-mode" value="manual">
+                                        <span>Manual Fit (Specify p,d,q)</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Manual orders (conditionally visible) -->
+                            <div id="manual-arima-inputs" class="manual-orders-grid hidden">
+                                <div class="form-group">
+                                    <label for="arima-p">AR Order (p):</label>
+                                    <input type="number" id="arima-p" class="number-input" min="0" max="5" value="1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="arima-d">Diff Order (d):</label>
+                                    <input type="number" id="arima-d" class="number-input" min="0" max="2" value="1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="arima-q">MA Order (q):</label>
+                                    <input type="number" id="arima-q" class="number-input" min="0" max="5" value="1">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-full mt-4" id="btn-run-forecast">
+                                <span>Run ARIMA Forecasting</span>
+                                <i data-lucide="trending-up"></i>
+                                <div class="spinner hidden" id="forecast-spinner"></div>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Model Fit Summary Panel -->
+                    <div class="card forecast-summary-card">
+                        <h3>Mathematical Fit Summary</h3>
+                        <div class="fit-metrics mt-4">
+                            <div class="fit-metric-item">
+                                <span class="label">Model Applied:</span>
+                                <strong id="model-applied">ARIMA(1,1,1)</strong>
+                            </div>
+                            <div class="fit-metric-item">
+                                <span class="label">AIC Score:</span>
+                                <strong id="model-aic">-</strong>
+                            </div>
+                            <div class="fit-metric-item">
+                                <span class="label">BIC Score:</span>
+                                <strong id="model-bic">-</strong>
+                            </div>
+                            <div class="fit-metric-item">
+                                <span class="label">Parameters Optimisation:</span>
+                                <span class="status-pill success" id="model-mode-pill">Auto</span>
+                            </div>
+                        </div>
+                        <div class="interpretation-box mt-4">
+                            <h4><i data-lucide="message-square"></i> Academic Evaluation Summary</h4>
+                            <p id="forecast-interpretation">
+                                Fit a forecasting model using the configuration panel to evaluate mathematical residuals and forecast trendlines.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Forecasting Chart -->
+                <div class="card mt-4 hidden" id="forecast-chart-container">
+                    <div class="card-header justify-between">
+                        <h3>Model Projection Dashboard</h3>
+                        <div class="chart-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="downloadMatplotlibPNG()">
+                                <i data-lucide="download-cloud"></i> Matplotlib PNG (Server)
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="downloadChartPNG('forecast')">
+                                <i data-lucide="download"></i> Chart.js PNG (Frontend)
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chart-canvas-container">
+                        <canvas id="forecastChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Forecast Table Output -->
+                <div class="card mt-4 hidden" id="forecast-table-container">
+                    <div class="card-header justify-between">
+                        <h3>Predicted Values & Confidence Intervals</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="downloadForecastCSV()">
+                            <i data-lucide="download"></i> Export CSV Table
+                        </button>
+                    </div>
+                    <div class="table-scroll">
+                        <table id="forecast-data-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Forecast Period</th>
+                                    <th>Predicted Value</th>
+                                    <th>Lower Confidence Limit (95% CI)</th>
+                                    <th>Upper Confidence Limit (95% CI)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamic forecasted entries -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+        </main>
+    </div>
+
+    <!-- Script imports -->
+    <script src="app.js"></script>
+</body>
+</html>
