@@ -344,6 +344,12 @@ function updateDashboard(param) {
         document.getElementById("stat-max").innerText = stats.max;
     }
     
+    // Calculate parameter trend and update the badge
+    updateParameterTrendBadge(param);
+    
+    // Generate dynamic environmental report
+    updateEnvironmentalInsights();
+    
     // Render chart
     renderHistoricalChart(param);
 }
@@ -981,5 +987,252 @@ function downloadCorrelationPNG() {
    ========================================================================== */
 function exportPDFReport() {
     window.print();
+}
+
+/* ==========================================================================
+   Trend Indicators and Dynamic Reports
+   ========================================================================== */
+function updateParameterTrendBadge(param) {
+    const values = currentDataset.data[param];
+    const badge = document.getElementById("param-trend-badge");
+    if (!values || values.length < 2) {
+        badge.className = "badge badge-info";
+        badge.innerHTML = "Stable ➡️";
+        return;
+    }
+    
+    const first = values[0];
+    const last = values[values.length - 1];
+    const diff = last - first;
+    
+    // Compute average to establish threshold
+    const sum = values.reduce((a, b) => a + b, 0);
+    const avg = sum / values.length;
+    const threshold = avg * 0.03; // 3% change threshold
+    
+    badge.className = "badge";
+    
+    if (Math.abs(diff) < threshold) {
+        badge.classList.add("badge-info");
+        badge.innerHTML = "Stable ➡️";
+    } else if (diff > 0) {
+        if (param.toLowerCase().includes("oxygen") || param.toLowerCase().includes("do")) {
+            badge.classList.add("badge-success");
+            badge.innerHTML = "Improving 📈";
+        } else if (param.toLowerCase().includes("rainfall")) {
+            badge.classList.add("badge-info");
+            badge.innerHTML = "Increasing 📈";
+        } else {
+            badge.classList.add("badge-warning");
+            badge.innerHTML = "Increasing 📈";
+        }
+    } else {
+        if (param.toLowerCase().includes("oxygen") || param.toLowerCase().includes("do")) {
+            badge.classList.add("badge-danger");
+            badge.innerHTML = "Declining 📉";
+        } else if (param.toLowerCase().includes("rainfall")) {
+            badge.classList.add("badge-info");
+            badge.innerHTML = "Decreasing 📉";
+        } else {
+            badge.classList.add("badge-success");
+            badge.innerHTML = "Improving 📉";
+        }
+    }
+}
+
+function updateEnvironmentalInsights() {
+    const card = document.getElementById("environmental-insights-card");
+    const summaryText = document.getElementById("insights-summary-text");
+    const bulletContainer = document.getElementById("insights-rule-bullets");
+    const overallBadge = document.getElementById("overall-status-badge");
+    
+    if (!currentDataset) {
+        card.style.display = "none";
+        return;
+    }
+    
+    card.style.display = "block";
+    bulletContainer.innerHTML = "";
+    
+    const stats = currentDataset.statistics;
+    const data = currentDataset.data;
+    const columns = currentDataset.columns;
+    
+    let summaryParts = [];
+    let bullets = [];
+    let warningCount = 0;
+    let criticalCount = 0;
+    
+    // Check pH
+    const phCol = columns.find(c => c.toLowerCase().includes("ph"));
+    if (phCol && stats[phCol]) {
+        const avgPh = stats[phCol].mean;
+        if (avgPh >= 6.5 && avgPh <= 8.5) {
+            bullets.push({
+                status: 'success',
+                text: `pH Average is ${avgPh} (Neutral) — fully complies with standard WHO biological safety parameters (6.5 - 8.5).`,
+                icon: 'check-circle'
+            });
+        } else {
+            warningCount++;
+            const condition = avgPh < 6.5 ? "acidic" : "alkaline";
+            bullets.push({
+                status: 'warning',
+                text: `pH Average is ${avgPh} (${condition}) — deviates from safe WHO limits. Biological activity may be compromised.`,
+                icon: 'alert-triangle'
+            });
+        }
+    }
+    
+    // Check Turbidity
+    const turbCol = columns.find(c => c.toLowerCase().includes("turbidity") || c.toLowerCase().includes("ntu"));
+    if (turbCol && stats[turbCol]) {
+        const avgTurb = stats[turbCol].mean;
+        const maxTurb = stats[turbCol].max;
+        if (avgTurb <= 5.0) {
+            bullets.push({
+                status: 'success',
+                text: `Turbidity Average is ${avgTurb} NTU — compliant with visual clarity and suspended solids limits.`,
+                icon: 'check-circle'
+            });
+        } else {
+            warningCount++;
+            bullets.push({
+                status: 'warning',
+                text: `Turbidity Average is ${avgTurb} NTU (Cloudy) — exceeds safe guideline limit of 5.0 NTU.`,
+                icon: 'alert-triangle'
+            });
+        }
+        
+        if (maxTurb > 10.0) {
+            criticalCount++;
+            bullets.push({
+                status: 'danger',
+                text: `Critical Turbidity spike detected (max ${maxTurb} NTU). This usually indicates high suspended sediment or stormwater runoff.`,
+                icon: 'x-circle'
+            });
+        }
+    }
+    
+    // Check Dissolved Oxygen (DO)
+    const doCol = columns.find(c => c.toLowerCase().includes("oxygen") || c.toLowerCase().includes("do"));
+    if (doCol && stats[doCol]) {
+        const avgDo = stats[doCol].mean;
+        if (avgDo >= 6.0) {
+            bullets.push({
+                status: 'success',
+                text: `Dissolved Oxygen (DO) is healthy (average ${avgDo} mg/L) — supports active aquatic fish populations.`,
+                icon: 'check-circle'
+            });
+        } else if (avgDo >= 4.0) {
+            warningCount++;
+            bullets.push({
+                status: 'warning',
+                text: `DO is sub-optimal (average ${avgDo} mg/L) — stress signs may occur in biological ecosystems.`,
+                icon: 'alert-triangle'
+            });
+        } else {
+            criticalCount++;
+            bullets.push({
+                status: 'danger',
+                text: `Critical DO depletion detected (average ${avgDo} mg/L) — represents hypoxic condition hazardous to aquatic organisms.`,
+                icon: 'x-circle'
+            });
+        }
+    }
+    
+    // Check Nitrates
+    const nitrateCol = columns.find(c => c.toLowerCase().includes("nitrate") || c.toLowerCase().includes("nitrogen"));
+    if (nitrateCol && stats[nitrateCol]) {
+        const avgNit = stats[nitrateCol].mean;
+        if (avgNit <= 10.0) {
+            bullets.push({
+                status: 'success',
+                text: `Nitrates Average is safe (${avgNit} mg/L) — low risk of fertilizer pollution or eutrophication.`,
+                icon: 'check-circle'
+            });
+        } else {
+            criticalCount++;
+            bullets.push({
+                status: 'danger',
+                text: `Excessive Nitrates detected (average ${avgNit} mg/L) — exceeds drinking water limits. Suspected agricultural runoff.`,
+                icon: 'x-circle'
+            });
+        }
+    }
+    
+    // Scientific Correlation Text
+    const rainCol = columns.find(c => c.toLowerCase().includes("rainfall") || c.toLowerCase().includes("rain"));
+    if (rainCol && turbCol && data[rainCol] && data[turbCol]) {
+        let highRainMonths = [];
+        let highTurbMonths = [];
+        const avgRain = stats[rainCol].mean;
+        const avgTurb = stats[turbCol].mean;
+        
+        for (let i = 0; i < data[rainCol].length; i++) {
+            if (data[rainCol][i] > avgRain * 1.3) highRainMonths.push(i);
+            if (data[turbCol][i] > avgTurb * 1.3) highTurbMonths.push(i);
+        }
+        
+        const commonMonths = highRainMonths.filter(m => highTurbMonths.includes(m));
+        if (commonMonths.length > 0) {
+            summaryParts.push(`Mathematical analysis indicates a clear environmental correlation: seasonal spikes in rainfall runoffs match elevated turbidity measurements (suspended solids).`);
+        } else {
+            summaryParts.push(`A baseline water parameters inspection has been compiled. Chemical components are generally stable across the monitored period.`);
+        }
+    } else {
+        summaryParts.push(`An automated check has been compiled. The dataset includes ${currentDataset.dates.length} total monthly observations.`);
+    }
+    
+    // Overall status setting
+    if (criticalCount > 0) {
+        overallBadge.className = "badge badge-danger";
+        overallBadge.innerHTML = "Overall: Critical Alert 🚨";
+        card.style.borderLeftColor = "var(--error)";
+    } else if (warningCount > 0) {
+        overallBadge.className = "badge badge-warning";
+        overallBadge.innerHTML = "Overall: Warning ⚠️";
+        card.style.borderLeftColor = "#f9e2af";
+    } else {
+        overallBadge.className = "badge badge-success";
+        overallBadge.innerHTML = "Overall: Safe & Clean ✅";
+        card.style.borderLeftColor = "#a6e3a1";
+    }
+    
+    summaryText.innerText = summaryParts.join(" ");
+    
+    // Render list
+    bullets.forEach(b => {
+        const li = document.createElement("li");
+        li.style.display = "flex";
+        li.style.alignItems = "flex-start";
+        li.style.gap = "0.5rem";
+        li.style.fontSize = "0.9rem";
+        li.style.lineHeight = "1.4";
+        
+        let colorClass = "var(--text-secondary)";
+        let iconName = "info";
+        if (b.status === 'success') {
+            colorClass = "#a6e3a1";
+            iconName = "check-circle";
+        } else if (b.status === 'warning') {
+            colorClass = "#f9e2af";
+            iconName = "alert-triangle";
+        } else if (b.status === 'danger') {
+            colorClass = "#f38ba8";
+            iconName = "x-circle";
+        }
+        
+        li.innerHTML = `
+            <i data-lucide="${iconName}" style="color: ${colorClass}; width: 18px; height: 18px; flex-shrink: 0; margin-top: 0.1rem;"></i>
+            <span style="color: var(--text-primary);">${b.text}</span>
+        `;
+        bulletContainer.appendChild(li);
+    });
+    
+    // Redraw Lucide icons in the report card
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
 }
 

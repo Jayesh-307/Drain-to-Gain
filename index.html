@@ -265,12 +265,16 @@
                     <p>Observe historical metrics, evaluate summary statistics, and track parameter correlation.</p>
                 </div>
 
-                <div class="dashboard-controls-bar">
+                <div class="dashboard-controls-bar" style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 1rem; flex-wrap: wrap;">
                     <div class="control-group">
                         <label for="dashboard-param-select">Select Metric to Plot:</label>
                         <select id="dashboard-param-select" class="select-input">
                             <!-- Dynamic parameter options -->
                         </select>
+                    </div>
+                    <div class="trend-indicator-bar flex-align" style="gap: 0.5rem; background: var(--bg-card); padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--border-color); display: flex; align-items: center;">
+                        <span style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">Overall Parameter Trend:</span>
+                        <span id="param-trend-badge" class="badge badge-info" style="font-size: 0.8rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 12px; display: inline-flex; align-items: center; gap: 0.25rem;">Calculating...</span>
                     </div>
                 </div>
 
@@ -309,6 +313,33 @@
                         <div class="stats-body">
                             <span class="stats-label">Maximum</span>
                             <h3 id="stat-max">-</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Smart Hydrological Analysis Report Card -->
+                <div class="card mt-4 info-card" id="environmental-insights-card" style="border-left: 4px solid var(--accent); transition: all 0.35s ease;">
+                    <div class="card-header justify-between" style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                        <h3 style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary);">
+                            <i data-lucide="sparkles" style="color: var(--accent); width: 20px; height: 20px;"></i>
+                            Dynamic Environmental Health Report
+                        </h3>
+                        <span class="badge" id="overall-status-badge" style="font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem;">Analyzing water safety...</span>
+                    </div>
+                    <div class="insights-content grid-2" style="margin-top: 1rem; gap: 2rem;">
+                        <div class="insights-text" style="display: flex; flex-direction: column; gap: 0.5rem; justify-content: center;">
+                            <h4 style="margin: 0; font-size: 1rem; color: var(--text-primary); font-weight: 600;">Automated Parameter Correlation Insights</h4>
+                            <p id="insights-summary-text" style="color: var(--text-secondary); line-height: 1.6; font-size: 0.92rem; margin: 0;">
+                                Please upload a dataset or load template configuration data to compile a localized chemical and environmental inspection report.
+                            </p>
+                        </div>
+                        <div class="insights-rules-list" style="border-left: 1px solid var(--border-color); padding-left: 1.5rem; display: flex; flex-direction: column; justify-content: center;">
+                            <ul id="insights-rule-bullets" style="list-style: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem;">
+                                <li style="display: flex; align-items: flex-start; gap: 0.5rem; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.4;">
+                                    <i data-lucide="info" style="color: var(--primary); width: 16px; height: 16px; flex-shrink: 0; margin-top: 0.1rem;"></i>
+                                    Water parameters will be benchmarked against standard WHO environmental safety guidelines.
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
