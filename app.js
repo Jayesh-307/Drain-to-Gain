@@ -912,12 +912,7 @@ function updateCorrelationPlot() {
     const spinner = document.getElementById("correlation-spinner");
     const placeholder = document.getElementById("correlation-placeholder");
     
-    if (param1 === param2) {
-        plotImg.style.display = "none";
-        placeholder.style.display = "block";
-        alert("Please select two different parameters to analyze correlation.");
-        return;
-    }
+
     
     // UI Loading state
     plotImg.style.display = "none";
